@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Convertidor de meses a tabla vertical</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <style>
 :root{
   color-scheme: light;
@@ -92,14 +93,21 @@ button{font:inherit; color:inherit}
 
 /* ---------- Tabla ---------- */
 .gridwrap{flex:1; min-height:0; overflow:auto; position:relative; background:var(--bg)}
-table{border-collapse:separate; border-spacing:0; min-width:100%; font-variant-numeric:tabular-nums; font-size:11px}
+table{border-collapse:separate; border-spacing:0; table-layout:fixed; font-variant-numeric:tabular-nums; font-size:11px}
 thead th{
-  position:sticky; top:0; z-index:3; background:var(--surface-2); color:var(--navy);
-  text-align:left; font-weight:600; padding:0; border-bottom:1px solid var(--line-strong); border-right:1px solid var(--line);
+  position:sticky; top:0; z-index:3; background:#003A70; color:#FFFFFF;
+  text-align:left; font-weight:600; padding:0; border-bottom:1px solid #002A52; border-right:1px solid rgba(255,255,255,.18);
   white-space:nowrap; user-select:none
 }
-thead th .h{display:flex; align-items:center; gap:.3rem; padding:.45rem .5rem .45rem .6rem}
-.fbtn:hover{background:#CBD8E0}
+thead th .h{display:flex; align-items:center; gap:.3rem; padding:.45rem .5rem .45rem .6rem; overflow:hidden}
+thead th .h span{overflow:hidden; text-overflow:ellipsis}
+.rz{position:absolute; top:0; right:-4px; width:9px; height:100%; cursor:col-resize; z-index:4; touch-action:none}
+.rz::after{content:""; position:absolute; left:3px; top:0; width:2px; height:100%; background:transparent; transition:background 120ms}
+.rz:hover::after, .rz.on::after{background:#fff}
+body.resizing, body.resizing *{cursor:col-resize !important; user-select:none}
+thead .fbtn{color:rgba(255,255,255,.75)}
+thead .fbtn:hover{background:rgba(255,255,255,.16); color:#fff}
+thead .fbtn.active{background:#fff; color:#003A70}
 thead th .h span{flex:1}
 thead th.num .h{justify-content:flex-end}
 thead th.num .h span{text-align:right}
@@ -111,8 +119,9 @@ thead th.num .h span{text-align:right}
 .fbtn.active{color:#fff; background:var(--accent)}
 .fbtn svg{width:13px; height:13px}
 tbody td{
+  color:#000000;
   padding:.32rem .6rem; border-bottom:1px solid var(--line); border-right:1px solid var(--line);
-  white-space:nowrap; max-width:36ch; overflow:hidden; text-overflow:ellipsis; cursor:cell
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:cell
 }
 tbody td.num{text-align:right}
 tbody tr:nth-child(even) td{background:var(--row-alt)}
@@ -121,11 +130,11 @@ tbody td.edited{box-shadow:inset 3px 0 0 var(--danger-mid); background:var(--edi
 tbody td.editing{padding:0; overflow:visible}
 tbody td.editing input{
   width:100%; height:100%; min-height:28px; padding:.3rem .55rem; border:2px solid var(--accent); border-radius:0;
-  font:inherit; background:var(--bg); color:var(--ink); outline:none
+  font:inherit; background:var(--bg); color:#000000; outline:none
 }
 tbody td.editing input.num{text-align:right}
-td.mes{font-weight:600; color:var(--ink)}
-td.dim{color:var(--ink-2)}
+td.mes{font-weight:600; color:#000000}
+td.dim{color:#000000}
 .empty-filtered{padding:2rem; color:var(--ink-3); text-align:center}
 
 /* ---------- Pie ---------- */
@@ -220,13 +229,13 @@ td.dim{color:var(--ink-2)}
 
   <div class="smart" id="smart" hidden>
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
-    <input type="search" id="q" placeholder="Busca en lenguaje libre: celular comex · importe>100 · mes:ago · rubro:oficina -licencia · producto:"vale de salida"" autocomplete="off" spellcheck="false">
+    <input type="search" id="q" placeholder="Busca en lenguaje libre: celular comex · importe>100 · mes:ago · rubro:oficina -licencia · producto:&quot;vale de salida&quot;" autocomplete="off" spellcheck="false">
     <button class="btn" id="btnHelp" title="Cómo buscar" aria-label="Ayuda del buscador">?</button>
     <div class="interp" id="interp"></div>
     <div class="help" id="help" hidden>
       <b>Cómo funciona:</b> escribe palabras sueltas y se buscan en todas las columnas sin importar mayúsculas ni tildes; varias palabras se combinan (todas deben cumplirse).
       <span>• <code>columna:valor</code> busca solo en esa columna, con el nombre abreviado (<code>rub:oficina</code>, <code>proc:comex</code>, <code>prod:celular</code>).</span>
-      <span>• <code>importe>500</code>, <code>cant<=2</code>, <code>precio=93.6</code>, <code>importe:100..500</code> filtran por número.</span>
+      <span>• <code>importe&gt;500</code>, <code>cant&lt;=2</code>, <code>precio=93.6</code>, <code>importe:100..500</code> filtran por número.</span>
       <span>• <code>mes:ago</code> o simplemente <code>agosto</code>; <code>mes:ene..abr</code> para un rango de meses.</span>
       <span>• <code>-palabra</code> excluye; <code>a|b</code> acepta cualquiera de los dos; <code>"frase exacta"</code> entre comillas.</span>
     </div>
@@ -271,6 +280,7 @@ const RE_DROP = /^(total|diferencia|sub\s*total)/i;
 let rows = [];          // filas largas {id, _orig:{}, [col]: valor}
 let dimCols = [];       // columnas descriptivas (unión entre archivos, en orden)
 let cols = [];          // definición de columnas visibles
+let colWidths = {};     // ancho en px por columna (ajustable con el mouse)
 let filters = {};       // key -> {set:Set|null, min:number|null, max:number|null}
 let sort = null;        // {key, dir}
 let query = '';
@@ -300,7 +310,7 @@ function num(v){
   const n = parseFloat(t); return isFinite(n) ? n : 0;
 }
 function clean(v){ if (v === null || v === undefined) return ''; return typeof v === 'string' ? v.trim() : v; }
-function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&','<':'<','>':'>','"':'"'}[c])); }
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 /* ================== Parseo de archivos ================== */
 function detectHeader(aoa){
@@ -411,10 +421,22 @@ function buildCols(){
   dimCols.forEach(d => cols.push({key:d, type:'text', cls:'dim'}));
   cols.push({key:'N° mes', type:'int', cls:'num'}, {key:'Mes', type:'text', cls:'mes'},
             {key:'Cantidad', type:'cant', cls:'num'}, {key:'Precio unitario', type:'money', cls:'num'}, {key:'Importe', type:'money', cls:'num'});
-  cols.forEach(c => { if (!filters[c.key]) filters[c.key] = {set:null, min:null, max:null}; });
+  cols.forEach(c => { if (!filters[c.key]) filters[c.key] = {set:null, min:null, max:null}; if (!colWidths[c.key]) colWidths[c.key] = autoWidth(c, rows); });
   renderHead();
 }
 function isNum(c){ return c.type !== 'text'; }
+function autoWidth(c, data){
+  let maxLen = c.key.length + 3;
+  const sample = data.slice(0, 600);
+  sample.forEach(r => { const L = display(c, r[c.key]).length; if (L > maxLen) maxLen = L; });
+  return Math.max(60, Math.min(340, Math.round(maxLen * 6.6 + 22)));
+}
+function applyWidths(){
+  const cg = $('#grid colgroup'); if (!cg) return;
+  let total = 0;
+  cols.forEach((c, i) => { const w = colWidths[c.key]; cg.children[i].style.width = w + 'px'; total += w; });
+  $('#grid').style.width = Math.max(total, $('#gridwrap').clientWidth) + 'px';
+}
 function display(c, v){
   if (v === '' || v === null || v === undefined) return '';
   if (c.type === 'money') return fmtN.format(v);
@@ -520,15 +542,38 @@ const ICON_DN = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stro
 function filterActive(key){ const f = filters[key]; return !!(f && (f.set || f.min !== null || f.max !== null)); }
 
 function renderHead(){
+  let cg = $('#grid colgroup'); if (!cg){ cg = document.createElement('colgroup'); $('#grid').insertBefore(cg, thead); }
+  cg.replaceChildren(...cols.map(() => document.createElement('col')));
   const tr = document.createElement('tr');
   cols.forEach(c => {
     const th = document.createElement('th'); th.className = c.cls === 'num' ? 'num' : '';
     const sorted = sort && sort.key === c.key;
-    th.innerHTML = `<div class="h"><span>${esc(c.key)}</span>${sorted ? `<i class="fbtn" style="color:var(--accent)">${sort.dir==='asc'?ICON_UP:ICON_DN}</i>` : ''}<button class="fbtn ${filterActive(c.key)?'active':''}" data-key="${esc(c.key)}" title="Filtrar / ordenar ${esc(c.key)}" aria-label="Filtrar ${esc(c.key)}">${ICON_FUNNEL}</button></div>`;
+    th.innerHTML = `<div class="h"><span>${esc(c.key)}</span>${sorted ? `<i class="fbtn" style="color:#fff">${sort.dir==='asc'?ICON_UP:ICON_DN}</i>` : ''}<button class="fbtn ${filterActive(c.key)?'active':''}" data-key="${esc(c.key)}" title="Filtrar / ordenar ${esc(c.key)}" aria-label="Filtrar ${esc(c.key)}">${ICON_FUNNEL}</button></div><div class="rz" data-rz="${esc(c.key)}" title="Arrastra para ajustar el ancho · doble clic ajusta al contenido"></div>`;
     tr.appendChild(th);
   });
   thead.replaceChildren(tr);
+  applyWidths();
 }
+
+/* ---- Ajuste de ancho de columnas con el mouse ---- */
+let rz = null;
+thead.addEventListener('pointerdown', e => {
+  const h = e.target.closest('.rz'); if (!h) return;
+  e.preventDefault(); h.setPointerCapture(e.pointerId);
+  rz = {h, key:h.dataset.rz, x:e.clientX, w:colWidths[h.dataset.rz]};
+  h.classList.add('on'); document.body.classList.add('resizing');
+});
+thead.addEventListener('pointermove', e => {
+  if (!rz) return;
+  colWidths[rz.key] = Math.max(44, Math.round(rz.w + (e.clientX - rz.x))); applyWidths();
+});
+function endRz(e){ if (!rz) return; rz.h.classList.remove('on'); document.body.classList.remove('resizing'); rz = null; }
+thead.addEventListener('pointerup', endRz); thead.addEventListener('pointercancel', endRz);
+thead.addEventListener('dblclick', e => {
+  const h = e.target.closest('.rz'); if (!h) return;
+  const c = cols.find(x => x.key === h.dataset.rz); colWidths[c.key] = autoWidth(c, visible.length ? visible : rows); applyWidths();
+});
+window.addEventListener('resize', applyWidths);
 
 let renderToken = 0;
 function renderBody(){
@@ -735,8 +780,38 @@ async function deliver(filename, data){
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); toast(`Descargando ${filename}`);
 }
+async function buildStyledXlsx(data){
+  const wb = new ExcelJS.Workbook(); wb.creator = 'Convertidor de meses';
+  const ws = wb.addWorksheet('Base', {views:[{state:'frozen', ySplit:1}]});
+  ws.columns = cols.map(c => ({header: c.key, key: c.key, width: Math.max(10, Math.min(60, Math.round(colWidths[c.key] / 6.6)))}));
+  data.forEach(r => ws.addRow(cols.map(c => isNum(c) ? num(r[c.key]) : (r[c.key] ?? ''))));
+  const thin = {style:'thin', color:{argb:'FFB7CCDF'}};
+  const head = ws.getRow(1); head.height = 20;
+  head.eachCell(cell => {
+    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF003A70'}};
+    cell.font = {name:'Calibri', size:11, bold:true, color:{argb:'FFFFFFFF'}};
+    cell.alignment = {vertical:'middle', horizontal:'center'};
+    cell.border = {top:thin, left:thin, bottom:thin, right:thin};
+  });
+  const fmt = {money:'#,##0.00', cant:'#,##0.####', int:'0'};
+  cols.forEach((c, i) => {
+    const col = ws.getColumn(i + 1);
+    col.eachCell({includeEmpty:false}, (cell, rowNumber) => {
+      if (rowNumber === 1) return;
+      cell.font = {name:'Calibri', size:11, color:{argb:'FF000000'}};
+      cell.border = {top:thin, left:thin, bottom:thin, right:thin};
+      if (isNum(c)){ cell.numFmt = fmt[c.type] || '0'; cell.alignment = {horizontal:'right'}; }
+    });
+  });
+  ws.autoFilter = {from:{row:1, column:1}, to:{row:Math.max(1, data.length + 1), column:cols.length}};
+  return await wb.xlsx.writeBuffer();
+}
 $('#btnXlsx').addEventListener('click', async () => {
   const data = exportRows(); if (!data.length) return toast('No hay filas para exportar', true);
+  if (typeof ExcelJS !== 'undefined'){
+    try{ const buf = await buildStyledXlsx(data); await deliver(`base-vertical-${stamp()}.xlsx`, new Blob([buf])); return; }
+    catch(e){ console.error(e); toast('No se pudo aplicar el formato; exportando sin estilos', true); }
+  }
   const ws = XLSX.utils.aoa_to_sheet(aoaFor(data));
   ws['!cols'] = cols.map(c => ({wch: Math.min(45, Math.max(10, ...data.slice(0,300).map(r => String(r[c.key] ?? '').length), c.key.length + 2))}));
   const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Base');
@@ -779,7 +854,7 @@ $('#strip').addEventListener('click', e => {
   else if (t.dataset.clear){ filters[t.dataset.clear] = {set:null,min:null,max:null}; applyAndRender(); }
   else if (t.dataset.clearAll){ Object.keys(filters).forEach(k => filters[k] = {set:null,min:null,max:null}); applyAndRender(); }
 });
-function resetAll(){ rows = []; dimCols = []; cols = []; filters = {}; sort = null; query = ''; $('#q').value = ''; compile(''); editsCount = 0; thead.replaceChildren(); tbody.replaceChildren(); applyAndRender(); }
+function resetAll(){ rows = []; dimCols = []; cols = []; colWidths = {}; filters = {}; sort = null; query = ''; $('#q').value = ''; compile(''); editsCount = 0; thead.replaceChildren(); tbody.replaceChildren(); applyAndRender(); }
 $('#btnClear').addEventListener('click', () => { if (!rows.length) return; if (editsCount && !confirm('Hay ediciones sin exportar. ¿Vaciar la tabla igual?')) return; resetAll(); toast('Tabla vaciada'); });
 
 if (typeof XLSX === 'undefined') toast('No se pudo cargar la librería de Excel; revisa tu conexión y recarga la página.', true);
