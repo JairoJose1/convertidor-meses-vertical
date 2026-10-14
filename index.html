@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Convertidor de meses a tabla vertical</title>
+<title>Convertidor de datos · Meses y Qlik Sense</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <style>
@@ -197,9 +197,90 @@ td.dim{color:#000000}
 .sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}
 @media (prefers-reduced-motion: reduce){ .pop{animation:none} .btn{transition:none} .toast{transition:none} }
 @media (max-width:720px){ .bar h1{display:none} .bar input[type=search]{min-width:120px} }
+
+/* ================== Pestañas de módulo ================== */
+body{display:flex; flex-direction:column}
+.mtabs{display:flex; align-items:flex-end; gap:.15rem; padding:.45rem .9rem 0; background:var(--surface); border-bottom:1px solid var(--line-strong); flex:none; overflow-x:auto}
+.mtabs .brand{font-weight:700; color:var(--navy); font-size:12px; letter-spacing:.06em; text-transform:uppercase; margin-right:.9rem; padding-bottom:.55rem; white-space:nowrap}
+.mtab{border:1px solid transparent; border-bottom:0; background:transparent; padding:.5rem .95rem .55rem; border-radius:9px 9px 0 0; cursor:pointer; color:var(--ink-2); font-weight:500; white-space:nowrap; position:relative; top:1px; transition:background 120ms, color 120ms}
+.mtab:hover{color:var(--navy); background:var(--surface-2)}
+.mtab.on{background:var(--bg); color:var(--navy); font-weight:600; border-color:var(--line-strong); box-shadow:inset 0 3px 0 var(--btn)}
+.mtab:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
+.mtab .tag{font-size:10px; font-weight:700; margin-left:.4rem; padding:.05rem .35rem; border-radius:999px; background:var(--btn-soft); color:var(--btn)}
+.module{flex:1; min-height:0; display:flex; flex-direction:column}
+.module > .app{flex:1; height:auto}
+
+/* ================== Módulo Qlik ================== */
+#modQlik .q-search{display:flex; align-items:center; gap:.5rem; padding:.45rem .9rem; border-bottom:1px solid var(--line); background:var(--bg)}
+#modQlik .q-search svg{width:16px; height:16px; color:var(--ink-3); flex:none}
+#modQlik .q-search input{flex:1; font:inherit; padding:.45rem .65rem; border:1px solid var(--line-strong); border-radius:8px; background:var(--bg); color:var(--ink)}
+#modQlik .q-search input:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent)}
+#modQlik .q-search .hint{color:var(--ink-3); font-size:11.5px; white-space:nowrap}
+#qGrid tbody td{cursor:default; height:26px; max-height:26px}
+#qGrid tbody tr:nth-child(even) td{background:transparent}
+#qGrid tbody tr.alt td{background:var(--row-alt)}
+#qGrid tbody tr:hover td{background:var(--row-hover)}
+#qGrid tbody tr.sp td{padding:0; border:0; background:transparent !important}
+#qGrid thead th{cursor:pointer}
+#qGrid thead th .h{padding:.45rem .6rem}
+#qGrid thead th .ar{font-size:10px; opacity:.85; flex:none}
+#qGrid thead th.derived{background:#0B4A85}
+#qGrid td.meas{font-weight:600}
+.badge{display:inline-flex; align-items:center; gap:.3rem; padding:.18rem .6rem; border-radius:999px; font-size:12px; font-weight:600}
+.badge.ok{background:var(--accent-soft); color:#003A70}
+.badge.bad{background:var(--danger-soft); color:var(--danger)}
+.chip.ok{border-color:#003A70; color:#003A70; cursor:pointer}
+.chip.bad{border-color:var(--danger); color:var(--danger); cursor:pointer}
+
+/* Ventana flotante de validación */
+.qv-back{position:fixed; inset:0; z-index:70; background:rgba(0,58,112,.18); display:flex; align-items:center; justify-content:center; padding:1rem}
+.qv{position:relative; width:min(640px,100%); max-height:calc(100% - 2rem); overflow:auto; background:var(--bg); border:1px solid var(--line-strong); border-radius:14px; box-shadow:0 24px 60px rgba(0,58,112,.28); animation:popin 200ms cubic-bezier(.2,.9,.3,1)}
+.qv-head{display:flex; align-items:center; gap:.6rem; padding:.85rem 1.1rem; background:#003A70; color:#fff; cursor:grab; user-select:none; touch-action:none; border-radius:13px 13px 0 0}
+.qv-head:active{cursor:grabbing}
+.qv-head h2{margin:0; font-size:15px; flex:1}
+.qv-head .x{border:0; background:transparent; color:#fff; font-size:20px; line-height:1; cursor:pointer; padding:0 .2rem; opacity:.8}
+.qv-head .x:hover{opacity:1}
+.qv-body{padding:1rem 1.1rem 1.1rem}
+.qv-verdict{display:flex; align-items:center; gap:.75rem; padding:.75rem .9rem; border-radius:10px; margin-bottom:.9rem}
+.qv-verdict.ok{background:var(--accent-soft); color:#003A70}
+.qv-verdict.bad{background:var(--danger-soft); color:var(--danger)}
+.qv-verdict .ic{width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; color:#fff; flex:none}
+.qv-verdict.ok .ic{background:#003A70}
+.qv-verdict.bad .ic{background:var(--danger)}
+.qv-verdict b{display:block; font-size:14px}
+.qv-verdict span{font-size:12px; opacity:.9}
+.qv table{width:100%; border-collapse:collapse; table-layout:auto; font-size:12px; margin-bottom:.8rem}
+.qv th{position:static; background:var(--surface); color:var(--ink-2); font-weight:600; text-align:right; padding:.45rem .55rem; border-bottom:1px solid var(--line-strong); border-right:0; white-space:nowrap; user-select:auto}
+.qv th:first-child, .qv td:first-child{text-align:left}
+.qv td{padding:.45rem .55rem; border-bottom:1px solid var(--line); text-align:right; font-variant-numeric:tabular-nums; color:#000; cursor:default; height:auto}
+.qv td.st{text-align:center; font-weight:700}
+.qv td.st.ok{color:#003A70}
+.qv td.st.bad{color:var(--danger)}
+.qv .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; margin-bottom:.8rem}
+.qv .kpi{background:var(--surface); border:1px solid var(--line); border-radius:9px; padding:.55rem .65rem}
+.qv .kpi small{display:block; color:var(--ink-3); font-size:11px; margin-bottom:.15rem}
+.qv .kpi b{font-size:16px; color:var(--navy); font-variant-numeric:tabular-nums}
+.qv .note{font-size:12px; color:var(--ink-2); margin:0 0 .9rem; line-height:1.45}
+.qv .note b{color:var(--ink)}
+.qv .acts{display:flex; gap:.5rem; justify-content:flex-end; flex-wrap:wrap}
+.qv .acts .btn{border-color:var(--btn); color:var(--btn); background:var(--bg); font-weight:500}
+.qv .acts .btn:hover{background:var(--btn-soft)}
+.qv .acts .btn.primary{background:var(--btn); color:#fff; font-weight:600}
+.qv .acts .btn.primary:hover{background:var(--btn-hover)}
+.q-busy{position:fixed; inset:0; z-index:65; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.7); color:var(--navy); font-weight:600; gap:.6rem}
+.q-busy i{width:18px; height:18px; border:2px solid var(--line-strong); border-top-color:#003A70; border-radius:50%; animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (max-width:620px){ .qv .kpis{grid-template-columns:repeat(2,1fr)} #modQlik .q-search .hint{display:none} }
+@media (prefers-reduced-motion: reduce){ .qv{animation:none} .q-busy i{animation:none} }
 </style>
 </head>
 <body>
+<nav class="mtabs" role="tablist" aria-label="Módulos">
+  <span class="brand">Módulos</span>
+  <button class="mtab on" role="tab" aria-selected="true" data-mod="meses">Meses → tabla vertical</button>
+  <button class="mtab" role="tab" aria-selected="false" data-mod="qlik">Qlik Sense → tabla limpia<span class="tag">Nuevo</span></button>
+</nav>
+<section class="module" id="modMeses">
 <div class="app">
   <div class="bar">
     <h1>Meses → tabla vertical</h1>
@@ -254,6 +335,56 @@ td.dim{color:#000000}
     <span class="hint">Doble clic en una celda para editar · Enter guarda · Esc cancela</span>
   </div>
 </div>
+</section>
+<section class="module" id="modQlik" hidden>
+  <div class="app">
+    <div class="bar">
+      <h1>Qlik Sense → tabla limpia</h1>
+      <input type="file" id="qFile" accept=".xlsx,.xls,.xlsm" class="sr">
+      <button class="btn primary" id="qOpen">Cargar archivo</button>
+      <label class="chk" title="Qlik muestra '-' cuando no hay dato; se exporta como celda vacía"><input type="checkbox" id="qDash" checked> Guion "-" como vacío</label>
+      <div class="grow"></div>
+      <button class="btn" id="qValid" disabled>Ver validación</button>
+      <button class="btn" id="qClear" disabled>Vaciar</button>
+      <div class="sep"></div>
+      <select id="qScope" disabled title="Qué filas exportar">
+        <option value="visible">Filas visibles</option>
+        <option value="all">Todas las filas</option>
+      </select>
+      <button class="btn" id="qCopy" disabled title="Copia la tabla para pegarla en Excel">Copiar</button>
+      <button class="btn" id="qCsv" disabled>Descargar CSV</button>
+      <button class="btn primary" id="qXlsx" disabled>Descargar Excel</button>
+    </div>
+    <div class="strip" id="qStrip"><span class="hint">Carga la descarga de Qlik Sense (tabla dinámica). Se rellenan las celdas combinadas, se quitan las filas de "Totales" y queda una fila por registro, lista para Power BI.</span></div>
+    <div class="drop" id="qDrop">
+      <strong>Suelta aquí la descarga de Qlik Sense</strong>
+      <p>Se detectan los encabezados, se completan las celdas combinadas hacia abajo y se eliminan los totales y subtotales. Al terminar verás una ventana que confirma que la suma cargada es igual a la suma transformada.</p>
+      <button class="btn" id="qOpen2">Elegir archivo</button>
+    </div>
+    <div class="q-search" id="qSearchRow" hidden>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
+      <input type="search" id="qQ" placeholder="Buscar: gerencia · mes:agosto · prov:agri -adobe" autocomplete="off" spellcheck="false">
+      <span class="hint">columna:valor · -excluir · clic en encabezado para ordenar</span>
+    </div>
+    <div class="gridwrap" id="qWrap" hidden>
+      <table id="qGrid"><colgroup id="qCols"></colgroup><thead></thead><tbody></tbody></table>
+      <div class="empty-filtered" id="qEmpty" hidden>Ningún registro coincide con la búsqueda.</div>
+    </div>
+    <div class="foot" id="qFoot" hidden>
+      <span>Registros: <b id="qRows">0</b> de <b id="qTotal">0</b></span>
+      <span id="qSums"></span>
+      <span class="grow"></span>
+      <span id="qCheckChip"></span>
+    </div>
+  </div>
+</section>
+<div class="qv-back" id="qvBack" hidden>
+  <div class="qv" id="qv" role="dialog" aria-modal="true" aria-labelledby="qvTitle">
+    <div class="qv-head" id="qvHead"><h2 id="qvTitle">Validación de la carga</h2><button class="x" id="qvX" aria-label="Cerrar">×</button></div>
+    <div class="qv-body" id="qvBody"></div>
+  </div>
+</div>
+<div class="q-busy" id="qBusy" hidden><i></i><span id="qBusyTxt">Procesando…</span></div>
 <div class="modal" id="modal" hidden>
   <div class="modal-card" role="dialog" aria-labelledby="mTitle">
     <h2 id="mTitle">Ya hay datos cargados</h2>
@@ -860,5 +991,456 @@ $('#btnClear').addEventListener('click', () => { if (!rows.length) return; if (e
 if (typeof XLSX === 'undefined') toast('No se pudo cargar la librería de Excel; revisa tu conexión y recarga la página.', true);
 })();
 </script>
+<script>
+/* ================== Pestañas de módulo ================== */
+(function(){
+  window.__mod = 'meses';
+  const tabs = document.querySelectorAll('.mtab');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    window.__mod = t.dataset.mod;
+    tabs.forEach(x => { const on = x === t; x.classList.toggle('on', on); x.setAttribute('aria-selected', on); });
+    document.getElementById('modMeses').hidden = window.__mod !== 'meses';
+    document.getElementById('modQlik').hidden = window.__mod !== 'qlik';
+    try{ localStorage.setItem('modulo', window.__mod); }catch(e){}
+  }));
+  let saved = null; try{ saved = localStorage.getItem('modulo'); }catch(e){}
+  if (saved === 'qlik') document.querySelector('.mtab[data-mod="qlik"]').click();
+})();
+
+/* ================== Módulo Qlik Sense → tabla limpia ================== */
+(function(){
+'use strict';
+const $ = s => document.querySelector(s);
+const MESN = {enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,setiembre:9,octubre:10,noviembre:11,diciembre:12};
+const RE_TOT = /^\s*(sub\s*)?totale?s?\s*$/i;
+const RE_MEAS = /importe|cantidad|monto|valor|costo|precio|soles|d[oó]lares|usd|pen|qty|unidades|kg|peso/i;
+const RH = 26;
+const fmt2 = new Intl.NumberFormat('es-PE', {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtQ = new Intl.NumberFormat('es-PE', {maximumFractionDigits:4});
+const fmtI = new Intl.NumberFormat('es-PE');
+
+let Q = {rows:[], cols:[], vis:[], sort:null, terms:[], file:'', check:null};
+let downloadsNs;
+
+function toast(msg, err){
+  const t = $('#toast'); t.textContent = msg; t.classList.toggle('err', !!err); t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2800);
+}
+function busy(on, txt){ $('#qBusy').hidden = !on; if (txt) $('#qBusyTxt').textContent = txt; }
+const tick = () => new Promise(r => setTimeout(r, 30));
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function norm(s){ return String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+function cleanText(v){
+  if (typeof v !== 'string') return v;
+  return v.replace(/_x000D_/gi,'').replace(/[\r\n\t]+/g,' ').replace(/\s{2,}/g,' ').trim();
+}
+function isTot(v){ return typeof v === 'string' && RE_TOT.test(v); }
+function isEmpty(v){ return v === null || v === undefined || (typeof v === 'string' && v.trim() === ''); }
+function n(v){ if (typeof v === 'number') return isFinite(v) ? v : 0; if (isEmpty(v)) return 0; const x = parseFloat(String(v).replace(/,/g,'')); return isFinite(x) ? x : 0; }
+function round2(x){ return Math.round(x * 100) / 100 + 0; }
+
+/* ---------- Lectura de la tabla dinámica de Qlik ---------- */
+function parseSheet(ws){
+  if (!ws || !ws['!ref']) return null;
+  const rng = XLSX.utils.decode_range(ws['!ref']);
+  const r0 = rng.s.r, c0 = rng.s.c;
+  const aoa = XLSX.utils.sheet_to_json(ws, {header:1, defval:null, raw:true, blankrows:true});
+  // 1) Deshacer combinaciones: copiar el valor de la celda superior izquierda a todo el rango
+  let filled = 0;
+  (ws['!merges'] || []).forEach(m => {
+    if (m.e.r > m.s.r || m.e.c > m.s.c) filled++;
+    const top = aoa[m.s.r - r0]; if (!top) return;
+    const v = top[m.s.c - c0]; if (isEmpty(v)) return;
+    for (let r = m.s.r; r <= m.e.r; r++){
+      const row = aoa[r - r0] || (aoa[r - r0] = []);
+      for (let c = m.s.c; c <= m.e.c; c++){
+        if (r === m.s.r && c === m.s.c) continue;
+        if (isEmpty(row[c - c0])) row[c - c0] = v;
+      }
+    }
+  });
+  // 2) Encabezado: primera fila con 3+ textos y sin "Totales"
+  let hi = -1;
+  for (let i = 0; i < Math.min(aoa.length, 40); i++){
+    const r = aoa[i] || [];
+    const txt = r.filter(c => typeof c === 'string' && c.trim() !== '');
+    if (txt.length >= 3 && !r.some(isTot)){ hi = i; break; }
+  }
+  if (hi < 0) return null;
+  const width = Math.max(...aoa.slice(hi, hi + 50).map(r => (r || []).length));
+  const seen = {};
+  const header = Array.from({length:width}, (_, i) => {
+    let h = cleanText(aoa[hi][i]); h = isEmpty(h) ? '' : String(h);
+    if (h && seen[h]) h = `${h} (${++seen[h]})`; else if (h) seen[h] = 1;
+    return h;
+  });
+  // 3) Medidas: columnas con número en la fila de "Totales" general; si no existe, por nombre
+  let grandIdx = -1;
+  for (let r = hi + 1; r < Math.min(aoa.length, hi + 15); r++){ const row = aoa[r] || []; if (row.some(isTot)){ grandIdx = r; break; } }
+  let meas = [];
+  if (grandIdx >= 0) header.forEach((h, i) => { if (h && typeof (aoa[grandIdx] || [])[i] === 'number') meas.push(i); });
+  if (!meas.length) header.forEach((h, i) => { if (h && RE_MEAS.test(h)) meas.push(i); });
+  if (!meas.length) return null;
+  const dims = header.map((h, i) => i).filter(i => header[i] && !meas.includes(i));
+
+  // 4) Recorrer filas: totales/subtotales fuera, detalle dentro
+  const det = [];
+  const subs = {};            // nivel (posición de la dimensión) -> {count, sums[]}
+  let read = 0, blanks = 0;
+  for (let r = hi + 1; r < aoa.length; r++){
+    const row = aoa[r];
+    if (!row || row.every(isEmpty)){ blanks++; continue; }
+    read++;
+    let lvl = -1;
+    for (let k = 0; k < dims.length; k++){ if (isTot(row[dims[k]])){ lvl = k; break; } }
+    if (lvl >= 0){
+      const s = subs[lvl] || (subs[lvl] = {count:0, sums:meas.map(() => 0)});
+      s.count++; meas.forEach((mi, j) => s.sums[j] += n(row[mi]));
+      continue;
+    }
+    if (dims.every(i => isEmpty(row[i])) && meas.every(i => isEmpty(row[i]))){ blanks++; continue; }
+    const o = [];
+    dims.forEach(i => o.push(cleanText(row[i]) ?? ''));
+    meas.forEach(i => o.push(n(row[i])));
+    det.push(o);
+  }
+  return {header, dims, meas, det, subs, read, blanks, filled};
+}
+
+function buildModel(p, fileName){
+  const dimNames = p.dims.map(i => p.header[i]);
+  const measNames = p.meas.map(i => p.header[i]);
+  const iMes = dimNames.findIndex(h => /^mes$/i.test(h.trim()));
+  const iAnio = dimNames.findIndex(h => /^(a[nñ]o|year|ejercicio)$/i.test(h.trim()));
+  const addMes = iMes >= 0 && p.det.some(r => MESN[norm(r[iMes]).trim()]);
+  const cols = [];
+  dimNames.forEach((h, k) => {
+    const numeric = p.det.length && p.det.slice(0, 500).every(r => isEmpty(r[k]) || r[k] === '-' || typeof r[k] === 'number');
+    cols.push({key:h, src:k, type: numeric ? 'code' : 'text'});
+    if (addMes && k === iMes){
+      cols.push({key:'N° mes', derived:'nmes', type:'int'});
+      if (iAnio >= 0) cols.push({key:'Periodo', derived:'periodo', type:'date'});
+    }
+  });
+  measNames.forEach((h, j) => {
+    const dec = p.det.some(r => !Number.isInteger(r[dimNames.length + j]));
+    cols.push({key:h, src:dimNames.length + j, type: /cant|qty|unid|kg|peso/i.test(h) ? 'cant' : 'money', meas:true, mj:j, dec});
+  });
+  const rows = p.det.map((r, id) => {
+    const o = {id, v:r};
+    if (addMes){
+      const m = MESN[norm(r[iMes]).trim()] || null; o.nmes = m;
+      if (iAnio >= 0){ const y = parseInt(r[iAnio], 10); o.periodo = (m && y) ? new Date(Date.UTC(y, m - 1, 1)) : null; }
+    }
+    return o;
+  });
+  // Validación
+  const levels = Object.keys(p.subs).map(Number).sort((a, b) => a - b);
+  const top = levels.length ? p.subs[levels[0]] : null;
+  const low = levels.length > 1 ? p.subs[levels[levels.length - 1]] : null;
+  const clean = measNames.map((_, j) => rows.reduce((s, r) => s + n(r.v[dimNames.length + j]), 0));
+  const checks = measNames.map((name, j) => {
+    const orig = top ? top.sums[j] : null;
+    const diff = orig === null ? null : round2(clean[j] - orig);
+    const lowSum = low ? low.sums[j] : null;
+    return {name, orig, clean:clean[j], diff, ok: orig === null ? null : Math.abs(diff) < 0.005,
+            low: lowSum, lowOk: lowSum === null ? null : Math.abs(lowSum - clean[j]) < 0.005};
+  });
+  const subDetail = levels.map(l => ({col: l === levels[0] && p.subs[l].count === 1 ? 'Total general' : `«Totales» en ${dimNames[l]}`, count: p.subs[l].count}));
+  const removed = levels.reduce((s, l) => s + p.subs[l].count, 0);
+  const allOk = checks.every(c => c.ok !== false) && checks.some(c => c.ok === true);
+  const check = {checks, subDetail, removed, read:p.read, filled:p.filled, records:rows.length, allOk,
+                 hasRef: !!top, lowCol: low ? dimNames[levels[levels.length - 1]] : null, file:fileName};
+  return {cols, rows, check};
+}
+
+/* ---------- Valores para mostrar / exportar ---------- */
+function raw(c, r){ return c.derived ? r[c.derived] : r.v[c.src]; }
+function val(c, r){
+  const v = raw(c, r);
+  if (!c.meas && !c.derived && v === '-' && $('#qDash').checked) return '';
+  return v ?? '';
+}
+function show(c, r){
+  const v = val(c, r);
+  if (v === '' || v === null) return '';
+  if (c.type === 'date') return v instanceof Date ? `01/${String(v.getUTCMonth() + 1).padStart(2,'0')}/${v.getUTCFullYear()}` : '';
+  if (c.type === 'money') return fmt2.format(v);
+  if (c.type === 'cant') return fmtQ.format(v);
+  return String(v);
+}
+
+/* ---------- Búsqueda y orden ---------- */
+function compileQuery(q){
+  const out = []; const re = /(-?)(?:([^\s:"]+):)?(?:"([^"]+)"|(\S+))/g; let m;
+  while ((m = re.exec(q))){
+    const neg = !!m[1]; const colTok = m[2] ? norm(m[2]) : null; const text = norm(m[3] || m[4] || '');
+    if (!text) continue;
+    let cols = null;
+    if (colTok){ cols = Q.cols.filter(c => norm(c.key).replace(/\s+/g,'').startsWith(colTok.replace(/\s+/g,''))); if (!cols.length) cols = null; }
+    out.push({neg, cols, text});
+  }
+  return out;
+}
+function rowText(r){ if (r._t === undefined) r._t = Q.cols.map(c => norm(show(c, r))).join('\u0001'); return r._t; }
+function apply(){
+  let list = Q.rows;
+  if (Q.terms.length){
+    list = list.filter(r => Q.terms.every(t => {
+      const hit = t.cols ? t.cols.some(c => norm(show(c, r)).includes(t.text)) : rowText(r).includes(t.text);
+      return t.neg ? !hit : hit;
+    }));
+  }
+  if (Q.sort){
+    const c = Q.sort.col, d = Q.sort.dir;
+    const isN = c.type !== 'text';
+    list = list.slice().sort((a, b) => {
+      let x = raw(c, a), y = raw(c, b);
+      if (c.type === 'date'){ x = x ? x.getTime() : -Infinity; y = y ? y.getTime() : -Infinity; }
+      if (isN && typeof x === 'number' && typeof y === 'number') return (x - y) * d;
+      return String(x ?? '').localeCompare(String(y ?? ''), 'es', {numeric:true}) * d;
+    });
+  }
+  Q.vis = list;
+  renderBody(true); renderFoot();
+}
+
+/* ---------- Tabla con desplazamiento virtual ---------- */
+function widthFor(c){
+  let len = c.key.length + 3;
+  Q.rows.slice(0, 800).forEach(r => { const l = show(c, r).length; if (l > len) len = l; });
+  return Math.max(64, Math.min(340, Math.round(len * 6.6 + 22)));
+}
+function renderHead(){
+  $('#qCols').innerHTML = Q.cols.map(c => `<col style="width:${c.w}px">`).join('');
+  const tw = Q.cols.reduce((s, c) => s + c.w, 0);
+  $('#qGrid').style.width = tw + 'px';
+  $('#qGrid thead').innerHTML = '<tr>' + Q.cols.map((c, i) => {
+    const ar = Q.sort && Q.sort.col === c ? (Q.sort.dir > 0 ? '▲' : '▼') : '';
+    const cls = [(c.type !== 'text' && c.type !== 'code') ? 'num' : '', c.derived ? 'derived' : ''].join(' ');
+    const tip = c.derived ? ' title="Columna agregada para Power BI"' : '';
+    return `<th class="${cls}" data-i="${i}"${tip}><div class="h"><span>${esc(c.key)}</span><span class="ar">${ar}</span></div></th>`;
+  }).join('') + '</tr>';
+}
+function renderBody(reset){
+  const wrap = $('#qWrap'); if (reset) wrap.scrollTop = 0;
+  const total = Q.vis.length;
+  $('#qEmpty').hidden = total > 0;
+  const top = wrap.scrollTop, h = wrap.clientHeight || 600;
+  const start = Math.max(0, Math.floor(top / RH) - 15);
+  const end = Math.min(total, Math.ceil((top + h) / RH) + 15);
+  const span = Q.cols.length;
+  let html = start ? `<tr class="sp"><td colspan="${span}" style="height:${start * RH}px"></td></tr>` : '';
+  for (let i = start; i < end; i++){
+    const r = Q.vis[i];
+    html += `<tr${i % 2 ? ' class="alt"' : ''}>` + Q.cols.map(c => {
+      const s = show(c, r); const cls = (c.type !== 'text' && c.type !== 'code') ? (c.meas ? 'num meas' : 'num') : 'dim';
+      return `<td class="${cls}" title="${esc(s)}">${esc(s)}</td>`;
+    }).join('') + '</tr>';
+  }
+  if (end < total) html += `<tr class="sp"><td colspan="${span}" style="height:${(total - end) * RH}px"></td></tr>`;
+  $('#qGrid tbody').innerHTML = html;
+}
+let rafId = 0;
+$('#qWrap').addEventListener('scroll', () => { if (rafId) return; rafId = requestAnimationFrame(() => { rafId = 0; renderBody(false); }); });
+window.addEventListener('resize', () => { if (Q.rows.length) renderBody(false); });
+
+function renderFoot(){
+  $('#qRows').textContent = fmtI.format(Q.vis.length);
+  $('#qTotal').textContent = fmtI.format(Q.rows.length);
+  $('#qSums').innerHTML = Q.cols.filter(c => c.meas).map(c => {
+    const s = Q.vis.reduce((a, r) => a + n(raw(c, r)), 0);
+    return `${esc(c.key)}: <b>${c.type === 'cant' ? fmtQ.format(s) : fmt2.format(s)}</b>`;
+  }).join(' &nbsp;·&nbsp; ');
+  const ck = Q.check;
+  $('#qCheckChip').innerHTML = ck ? `<span class="chip ${ck.allOk ? 'ok' : 'bad'}" id="qChipBtn">${ck.allOk ? '✔ Cuadra con el archivo' : '✖ Revisar validación'}</span>` : '';
+}
+$('#qFoot').addEventListener('click', e => { if (e.target.id === 'qChipBtn') openCheck(); });
+
+$('#qGrid').addEventListener('click', e => {
+  const th = e.target.closest('th'); if (!th) return;
+  const c = Q.cols[+th.dataset.i];
+  if (!Q.sort || Q.sort.col !== c) Q.sort = {col:c, dir:1};
+  else if (Q.sort.dir === 1) Q.sort.dir = -1;
+  else Q.sort = null;
+  renderHead(); apply();
+});
+let qT; $('#qQ').addEventListener('input', e => { clearTimeout(qT); qT = setTimeout(() => { Q.terms = compileQuery(e.target.value.trim()); apply(); }, 150); });
+$('#qQ').addEventListener('keydown', e => { if (e.key === 'Escape'){ e.target.value = ''; Q.terms = []; apply(); } });
+$('#qDash').addEventListener('change', () => { Q.rows.forEach(r => delete r._t); Q.cols.forEach(c => c.w = widthFor(c)); renderHead(); apply(); });
+
+/* ---------- Ventana flotante de validación ---------- */
+function money(x){ return x === null ? '—' : fmt2.format(x); }
+function openCheck(){
+  const ck = Q.check; if (!ck) return;
+  const verdict = !ck.hasRef
+    ? `<div class="qv-verdict bad"><div class="ic">!</div><div><b>No se encontró la fila de "Totales" general</b><span>No hay contra qué comparar; revisa que la descarga incluya totales.</span></div></div>`
+    : ck.allOk
+      ? `<div class="qv-verdict ok"><div class="ic">✔</div><div><b>La información cuadra</b><span>La suma de la tabla limpia es igual al total del archivo cargado.</span></div></div>`
+      : `<div class="qv-verdict bad"><div class="ic">✖</div><div><b>Hay diferencias</b><span>La suma de la tabla limpia no coincide con el total del archivo. Revisa antes de usarla.</span></div></div>`;
+  const rows = ck.checks.map(c => `<tr><td><b>${esc(c.name)}</b></td><td>${money(c.orig)}</td><td>${money(c.clean)}</td><td>${money(c.diff)}</td>
+     <td class="st ${c.ok === false ? 'bad' : 'ok'}">${c.ok === null ? '—' : c.ok ? '✔' : '✖'}</td></tr>`).join('');
+  const lowTxt = ck.lowCol ? `<p class="note">Control cruzado: la suma de las filas «Totales» de la columna <b>${esc(ck.lowCol)}</b> (subtotal más detallado) ${ck.checks.every(c => c.lowOk !== false) ? 'también coincide' : '<b style="color:var(--danger)">no coincide</b>'} con la tabla limpia (${ck.checks.map(c => `${esc(c.name)} ${money(c.low)}`).join(' · ')}).</p>` : '';
+  const subs = ck.subDetail.map(s => `${esc(s.col)}: ${fmtI.format(s.count)}`).join(' · ');
+  $('#qvBody').innerHTML = verdict + `
+    <table><thead><tr><th>Medida</th><th>Archivo cargado</th><th>Tabla limpia</th><th>Diferencia</th><th>Estado</th></tr></thead><tbody>${rows}</tbody></table>
+    ${lowTxt}
+    <div class="kpis">
+      <div class="kpi"><small>Filas leídas</small><b>${fmtI.format(ck.read)}</b></div>
+      <div class="kpi"><small>Totales quitados</small><b>${fmtI.format(ck.removed)}</b></div>
+      <div class="kpi"><small>Combinaciones resueltas</small><b>${fmtI.format(ck.filled)}</b></div>
+      <div class="kpi"><small>Registros limpios</small><b>${fmtI.format(ck.records)}</b></div>
+    </div>
+    <p class="note">Filas de totales eliminadas por nivel → ${subs || 'ninguna'}.<br>Archivo: <b>${esc(ck.file)}</b></p>
+    <div class="acts"><button class="btn" data-act="xlsx">Descargar Excel</button><button class="btn primary" data-act="ok">${ck.allOk ? 'Confirmar y ver tabla' : 'Entendido, ver tabla'}</button></div>`;
+  const card = $('#qv'); card.style.transform = ''; drag.x = 0; drag.y = 0;
+  $('#qvBack').hidden = false;
+  setTimeout(() => { const b = $('#qvBody [data-act="ok"]'); if (b) b.focus(); }, 40);
+}
+function closeCheck(){ $('#qvBack').hidden = true; }
+$('#qvX').addEventListener('click', closeCheck);
+$('#qvBack').addEventListener('click', e => {
+  if (e.target.id === 'qvBack') closeCheck();
+  const a = e.target.closest('[data-act]'); if (!a) return;
+  if (a.dataset.act === 'ok') closeCheck();
+  if (a.dataset.act === 'xlsx') exportXlsx();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#qvBack').hidden) closeCheck(); });
+// La ventana se puede mover arrastrando la barra azul
+const drag = {x:0, y:0, on:false, sx:0, sy:0};
+$('#qvHead').addEventListener('pointerdown', e => {
+  if (e.target.closest('.x')) return;
+  drag.on = true; drag.sx = e.clientX - drag.x; drag.sy = e.clientY - drag.y; e.currentTarget.setPointerCapture(e.pointerId);
+});
+$('#qvHead').addEventListener('pointermove', e => {
+  if (!drag.on) return; drag.x = e.clientX - drag.sx; drag.y = e.clientY - drag.sy;
+  $('#qv').style.transform = `translate(${drag.x}px, ${drag.y}px)`;
+});
+['pointerup','pointercancel'].forEach(ev => $('#qvHead').addEventListener(ev, () => drag.on = false));
+$('#qValid').addEventListener('click', openCheck);
+
+/* ---------- Carga ---------- */
+async function loadFile(f){
+  if (!f) return;
+  if (typeof XLSX === 'undefined') return toast('No se pudo cargar la librería de Excel; revisa tu conexión y recarga.', true);
+  busy(true, 'Leyendo archivo…'); await tick();
+  try{
+    const buf = await f.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array', cellStyles:false});
+    busy(true, 'Descombinando celdas y quitando totales…'); await tick();
+    let best = null;
+    for (const sn of wb.SheetNames){ const p = parseSheet(wb.Sheets[sn]); if (p && p.det.length && (!best || p.det.length > best.det.length)) best = p; }
+    if (!best){ busy(false); return toast('No se reconoció una tabla de Qlik en el archivo (encabezados + columnas numéricas).', true); }
+    const name = f.name.replace(/\.[^.]+$/, '');
+    const m = buildModel(best, name);
+    Q.rows = m.rows; Q.cols = m.cols; Q.check = m.check; Q.file = name; Q.sort = null; Q.terms = []; $('#qQ').value = '';
+    Q.cols.forEach(c => c.w = widthFor(c));
+    ['#qDrop'].forEach(s => $(s).hidden = true);
+    ['#qWrap','#qFoot','#qSearchRow'].forEach(s => $(s).hidden = false);
+    ['#qValid','#qClear','#qScope','#qCopy','#qCsv','#qXlsx'].forEach(s => $(s).disabled = false);
+    $('#qStrip').innerHTML = `<span class="chip">📄 ${esc(f.name)}</span><span class="hint">${fmtI.format(Q.rows.length)} registros · ${Q.cols.length} columnas · sin totales ni celdas combinadas</span>`;
+    renderHead(); apply();
+    busy(false);
+    openCheck();
+  }catch(e){ console.error(e); busy(false); toast('No se pudo leer el archivo: ' + (e.message || e), true); }
+  $('#qFile').value = '';
+}
+function pick(){ $('#qFile').click(); }
+$('#qOpen').addEventListener('click', pick);
+$('#qOpen2').addEventListener('click', pick);
+$('#qFile').addEventListener('change', e => loadFile(e.target.files[0]));
+$('#qClear').addEventListener('click', () => {
+  Q = {rows:[], cols:[], vis:[], sort:null, terms:[], file:'', check:null};
+  $('#qGrid thead').innerHTML = ''; $('#qGrid tbody').innerHTML = ''; $('#qQ').value = '';
+  $('#qDrop').hidden = false; ['#qWrap','#qFoot','#qSearchRow'].forEach(s => $(s).hidden = true);
+  ['#qValid','#qClear','#qScope','#qCopy','#qCsv','#qXlsx'].forEach(s => $(s).disabled = true);
+  $('#qStrip').innerHTML = '<span class="hint">Carga la descarga de Qlik Sense (tabla dinámica).</span>';
+});
+// Arrastrar y soltar: solo cuando esta pestaña está activa (captura antes que el otro módulo)
+['dragenter','dragover'].forEach(ev => window.addEventListener(ev, e => {
+  if (window.__mod !== 'qlik') return; e.preventDefault(); e.stopImmediatePropagation(); $('#qDrop').classList.add('over');
+}, true));
+window.addEventListener('dragleave', e => { if (window.__mod !== 'qlik') return; e.stopImmediatePropagation(); if (!e.relatedTarget) $('#qDrop').classList.remove('over'); }, true);
+window.addEventListener('drop', e => {
+  if (window.__mod !== 'qlik') return; e.preventDefault(); e.stopImmediatePropagation(); $('#qDrop').classList.remove('over');
+  const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) loadFile(f);
+}, true);
+
+/* ---------- Exportar ---------- */
+function exportRows(){ return $('#qScope').value === 'all' ? Q.rows : Q.vis; }
+function stamp(){ const d = new Date(), p = x => String(x).padStart(2,'0'); return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`; }
+function plain(c, r){ const v = val(c, r); if (c.type === 'date') return v ? show(c, r) : ''; return v; }
+async function deliver(filename, data){
+  if (downloadsNs === undefined){
+    try{ downloadsNs = (window.claude && window.claude.use) ? await Promise.race([window.claude.use('downloads'), new Promise(r => setTimeout(() => r(null), 10000))]) : null; }catch(e){ downloadsNs = null; }
+  }
+  if (downloadsNs){
+    try{ await downloadsNs.save({filename, data}); toast(`Guardado: ${filename}`); }
+    catch(e){ if (e && e.code === 'declined') toast('Descarga cancelada'); else toast('No se pudo guardar: ' + (e && e.message || e), true); }
+    return;
+  }
+  const blob = data instanceof Blob ? data : new Blob([data]);
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); toast(`Descargando ${filename}`);
+}
+async function exportXlsx(){
+  const data = exportRows(); if (!data.length) return toast('No hay filas para exportar', true);
+  const fname = `${Q.file || 'qlik'}-tabla-limpia-${stamp()}.xlsx`;
+  busy(true, 'Generando Excel…'); await tick();
+  try{
+    if (typeof ExcelJS !== 'undefined'){
+      const wb = new ExcelJS.Workbook(); wb.creator = 'Qlik → tabla limpia';
+      const ws = wb.addWorksheet('Base', {views:[{state:'frozen', ySplit:1}]});
+      ws.columns = Q.cols.map(c => ({header:c.key, key:c.key, width:Math.max(9, Math.min(55, Math.round(c.w / 6.6)))}));
+      data.forEach(r => ws.addRow(Q.cols.map(c => { const v = val(c, r); return v === '' ? null : v; })));
+      const thin = {style:'thin', color:{argb:'FFB7CCDF'}};
+      ws.getRow(1).height = 20;
+      ws.getRow(1).eachCell(cell => {
+        cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF003A70'}};
+        cell.font = {name:'Calibri', size:11, bold:true, color:{argb:'FFFFFFFF'}};
+        cell.alignment = {vertical:'middle', horizontal:'center'};
+        cell.border = {top:thin, left:thin, bottom:thin, right:thin};
+      });
+      Q.cols.forEach((c, i) => {
+        const col = ws.getColumn(i + 1);
+        if (c.type === 'money') col.numFmt = '#,##0.00';
+        else if (c.type === 'cant') col.numFmt = c.dec ? '#,##0.####' : '#,##0';
+        else if (c.type === 'date') col.numFmt = 'dd/mm/yyyy';
+        else if (c.type === 'int' || c.type === 'code') col.numFmt = '0';
+      });
+      ws.autoFilter = {from:{row:1, column:1}, to:{row:data.length + 1, column:Q.cols.length}};
+      // Hoja de control con el cuadre
+      const vs = wb.addWorksheet('Validación');
+      vs.columns = [{header:'Medida', width:22}, {header:'Archivo cargado', width:20}, {header:'Tabla limpia', width:20}, {header:'Diferencia', width:14}, {header:'Estado', width:12}];
+      Q.check.checks.forEach(c => vs.addRow([c.name, c.orig, c.clean, c.diff, c.ok === null ? 'Sin referencia' : c.ok ? 'Cuadra' : 'Diferencia']));
+      vs.addRow([]); vs.addRow(['Registros limpios', Q.check.records]); vs.addRow(['Filas de totales quitadas', Q.check.removed]); vs.addRow(['Archivo', Q.check.file]);
+      vs.getRow(1).eachCell(cell => { cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF003A70'}}; cell.font = {bold:true, color:{argb:'FFFFFFFF'}}; });
+      [2,3,4].forEach(i => vs.getColumn(i).numFmt = '#,##0.00');
+      const buf = await wb.xlsx.writeBuffer();
+      busy(false); await deliver(fname, new Blob([buf])); return;
+    }
+    const aoa = [Q.cols.map(c => c.key)].concat(data.map(r => Q.cols.map(c => { const v = val(c, r); return v === '' ? null : v; })));
+    const ws = XLSX.utils.aoa_to_sheet(aoa, {cellDates:true});
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Base');
+    const buf = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+    busy(false); await deliver(fname, new Blob([buf]));
+  }catch(e){ console.error(e); busy(false); toast('No se pudo generar el Excel: ' + (e.message || e), true); }
+}
+$('#qXlsx').addEventListener('click', exportXlsx);
+$('#qCsv').addEventListener('click', async () => {
+  const data = exportRows(); if (!data.length) return toast('No hay filas para exportar', true);
+  const lines = [Q.cols.map(c => c.key)].concat(data.map(r => Q.cols.map(c => plain(c, r))));
+  const csv = lines.map(r => r.map(v => { const s = String(v ?? ''); return /[;"\n\r]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s; }).join(';')).join('\r\n');
+  await deliver(`${Q.file || 'qlik'}-tabla-limpia-${stamp()}.csv`, '\ufeff' + csv);
+});
+$('#qCopy').addEventListener('click', async () => {
+  const data = exportRows(); if (!data.length) return toast('No hay filas para copiar', true);
+  const tsv = [Q.cols.map(c => c.key)].concat(data.map(r => Q.cols.map(c => String(plain(c, r) ?? '').replace(/[\t\n\r]/g,' ')))).map(r => r.join('\t')).join('\n');
+  try{ await navigator.clipboard.writeText(tsv); toast(`${fmtI.format(data.length)} filas copiadas · pega en Excel con Ctrl+V`); }
+  catch(e){ toast('No se pudo copiar al portapapeles', true); }
+});
+})();
+</script>
+
 </body>
 </html>
